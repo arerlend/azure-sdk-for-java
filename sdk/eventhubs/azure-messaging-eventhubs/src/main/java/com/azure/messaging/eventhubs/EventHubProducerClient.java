@@ -140,6 +140,36 @@ public class EventHubProducerClient implements Closeable {
     }
 
     /**
+     * Creates an {@link ObjectBatch} that can fit as many serialized objects as events as the transport allows.
+     *
+     * @param objectType type of object in the batch
+     *
+     * @param <T> object type
+     *
+     * @return A new {@link ObjectBatch} that can fit as many serialized objects as events as the transport allows.
+     */
+    public <T> ObjectBatch<T> createBatch(Class<T> objectType) {
+        return producer.createBatch(objectType).block(tryTimeout);
+    }
+
+    /**
+     * Creates an {@link ObjectBatch} configured with the options specified.
+     *
+     * @param objectType type of object in the batch
+     *
+     * @param <T> object type
+     *
+     * @param options A set of options used to configure the {@link ObjectBatch}.
+     *
+     * @return A new {@link ObjectBatch} that can fit as many events as the transport allows.
+     *
+     * @throws NullPointerException if {@code options} is null.
+     */
+    public <T> ObjectBatch<T> createBatch(Class<T> objectType, CreateBatchOptions options) {
+        return producer.createBatch(objectType, options).block(tryTimeout);
+    }
+
+    /**
      * Sends a single event to the associated Event Hub. If the size of the single event exceeds the maximum size
      * allowed, an exception will be triggered and the send will fail.
      *
