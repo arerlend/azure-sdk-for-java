@@ -203,6 +203,30 @@ public class EventHubProducerClient implements Closeable {
     }
 
     /**
+     * Serializes an object into an EventData body using the configured serializer and sends a single EventData
+     * with default send options.  If the serialized object size exceeds maximum allowed size, an exception will be
+     * triggered and the send will fail.
+     *
+     * @param object object to be serialized into EventData body
+     */
+    void send(Object object) {
+        this.producer.send(object).block();
+    }
+
+    /**
+     * Serializes an object into an EventData body using the configured serializer and sends a single EventData
+     * with default send options.  If the serialized object size exceeds maximum allowed size, an exception will be
+     * triggered and the send will fail.
+     *
+     * @param object object to be serialized into EventData body
+     *
+     * @param options The set of options to consider when sending this event.
+     */
+    void send(Object object, SendOptions options) {
+        this.producer.send(object, options).block();
+    }
+
+    /**
      * Sends a set of events to the associated Event Hub using a batched approach. If the size of events exceed the
      * maximum size of a single batch, an exception will be triggered and the send will fail. By default, the message
      * size is the max amount allowed on the link.

@@ -30,6 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -366,6 +367,45 @@ public class EventHubProducerAsyncClient implements Closeable {
         }
 
         return send(Flux.just(event), options);
+    }
+
+    /**
+     * Serializes an object into an EventData body using the configured serializer and sends a single EventData
+     * with default send options.  If the serialized object size exceeds maximum allowed size, an exception will be
+     * triggered and the send will fail.
+     *
+     * @param object object to be serialized into EventData body
+     *
+     * @return A {@link Mono} that completes when the event is pushed to the service.
+     */
+    public Mono<Void> send(Object object) {
+        return this.send(object, DEFAULT_SEND_OPTIONS);
+    }
+
+    /**
+     * Serializes an object into an EventData body using the configured serializer and sends a single EventData
+     * with default send options.  If the serialized object size exceeds maximum allowed size, an exception will be
+     * triggered and the send will fail.
+     *
+     * @param object object to be serialized into EventData body
+     *
+     * @param options The set of options to consider when sending this event.
+     *
+     * @return A {@link Mono} that completes when the event is pushed to the service.
+     */
+    public Mono<Void> send(Object object, SendOptions options) {
+        if (object == null) {
+            return monoError(logger, new NullPointerException("'object' cannot be null."));
+        } else if (options == null) {
+            return monoError(logger, new NullPointerException("'options' cannot be null."));
+        } else if (serializer == null) {
+            return monoError(logger,
+                new NullPointerException("No serializer set for performing object serialization into EventData."));
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        return serializer.serializeAsync(outputStream, object)
+            .then(send(new EventData(outputStream.toByteArray())));
     }
 
     /**
